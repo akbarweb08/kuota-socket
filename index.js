@@ -1,5 +1,5 @@
 const express = require("express");
-
+const PORT = process.env.PORT || 3000;
 const app = express();
 const bodyParser = require('body-parser');
 // socket
@@ -49,6 +49,6 @@ io.use((socket, next) => {
     next();
 })
 
-server.listen(3000, () => {
+server.listen(PORT, () => {
     console.log("server is running");
 });
