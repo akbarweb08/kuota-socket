@@ -33,12 +33,10 @@ app.get("/", (req, res) => {
 // socket connection
 io.on("connection", (socket) => {
     let user = socket.user
-    socket.join(user.UID);
-    console.log('connected')
     socket.on('disconnect', async (user) => {
         socket.leave(user.UID);
     })
-
+    
 });
 io.use((socket, next) => {
     const user = socket.handshake.auth.user;
