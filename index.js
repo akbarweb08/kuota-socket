@@ -33,6 +33,7 @@ app.get("/", (req, res) => {
 // socket connection
 io.on("connection", (socket) => {
     let user = socket.user
+    socket.join(user.UID)
     socket.on('disconnect', async (user) => {
         socket.leave(user.UID);
     })
