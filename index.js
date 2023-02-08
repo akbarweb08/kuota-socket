@@ -1,14 +1,24 @@
 const express = require("express");
+const { readFileSync } = require("fs");
 const PORT = process.env.PORT || 3000;
+const { createServer } = require("https");
 const app = express();
+const { Server } = require("socket.io");
 const bodyParser = require('body-parser');
 // socket
-const server = require("http").createServer(app);
-const io = require("socket.io")(server, {
-    cors: {
-        origin: "*",
-    },
-});
+// const server = require("https").createServer(app);
+const httpsServer = createServer({
+    key: readFileSync('/etc/letsencrypt/live/kuota-socket.bright.id/privkey.pem'),
+    cert: readFileSync('/etc/letsencrypt/live/kuota-socket.bright.id/cert.pem')
+  });
+  const io = new Server(httpsServer, { cors: {
+    origin: "*",
+}, });
+// const io = require("socket.io")(server, {
+    // cors: {
+    //     origin: "*",
+    // },
+// });
 
 // socket Router
 const NotificationRouter = require("./controller/notification")(io);
@@ -23,6 +33,7 @@ app.set(express.urlencoded({
 
 app.set(express.json());
 
+// app.use(express.static(__dirname + '/node_modules'));
 // landing
 app.get("/", (req, res) => {
     res.json({
