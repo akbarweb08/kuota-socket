@@ -11,7 +11,7 @@ function NotificationRouter(io) {
       detail_vehicle: body.detail_distribution.detail_vehicle,
       quota: body.quota,
       location: body.gas_station,
-      kilometer_number : body.kilometer_number,
+
     }
     if (!body) {
       res
