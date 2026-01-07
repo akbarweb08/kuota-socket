@@ -6,13 +6,21 @@ function NotificationRouter(io) {
   router.post("/send-notification", (req, res) => {
     const body = req.body;
     let data = {
-      receiver_id: body.detail_distribution.detail_vehicle.user_id,
-      transaction_id: body.id,
-      detail_vehicle: body.detail_distribution.detail_vehicle,
-      quota: body.quota,
-      location: body.gas_station,
-      kilometer_number : body.kilometer_number,
+      receiver_id: body['data'].detail_distribution.detail_vehicle.user_id+'-'+body['qrToken'],
+      transaction_id: body['data'].id,
+      detail_vehicle: body['data'].detail_distribution.detail_vehicle,
+      quota: body['data'].quota,
+      location: body['data'].gas_station,
+      kilometer_number : body['data'].kilometer_number,
     }
+    // let data = {
+    //   receiver_id: body.detail_distribution.detail_vehicle.user_id,
+    //   transaction_id: body.id,
+    //   detail_vehicle: body.detail_distribution.detail_vehicle,
+    //   quota: body.quota,
+    //   location: body.gas_station,
+    //   kilometer_number : body.kilometer_number,
+    // }
     if (!body) {
       res
         .json({

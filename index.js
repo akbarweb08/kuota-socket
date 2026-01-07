@@ -1,65 +1,56 @@
 const express = require("express");
 const PORT = process.env.PORT || 3000;
 const app = express();
-const bodyParser = require('body-parser');
-// socket
+const bodyParser = require("body-parser");
 const server = require("http").createServer(app);
-
-const { createAdapter } = require("@socket.io/cluster-adapter");
-const { setupWorker } = require("@socket.io/sticky");
 const io = require("socket.io")(server, {
-    cors: {
-        origin: "*",
-    },
-    transports: ["websocket"],
-    allowUpgrades: false
+  cors: {
+    origin: "*",
+  },
+  transports: ["websocket"],
+  allowUpgrades: false,
 });
 
+// Middleware parsing
+app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-io.adapter(createAdapter());
+// Socket middleware auth
+io.use((socket, next) => {
+  const user = socket.handshake.auth.user;
+  if (!user) {
+    return next(new Error("Invalid Username"));
+  }
+  socket.user = user;
+  next();
+});
 
-setupWorker(io);
-// socket Router
+// Socket connection
+io.on("connection", (socket) => {
+  const user = socket.user;
+  console.log(`${user.UID} connected`);
+
+  socket.join(user.UID);
+
+  socket.on("disconnect", (reason) => {
+    console.log(`Disconnected: ${user.UID}, reason: ${reason}`);
+    socket.leave(user.UID);
+  });
+});
+
+// Router untuk notifikasi
 const NotificationRouter = require("./controller/notification")(io);
-app.use(bodyParser.json())
 app.use("/api/v1", NotificationRouter);
 
-// app.set("view engine", "ejs");
-
-app.set(express.urlencoded({
-    extended: false
-}));
-
-app.set(express.json());
-
-// app.use(express.static(__dirname + '/node_modules'));
-// landing
+// Endpoint test/landing
 app.get("/", (req, res) => {
-    res.json({
-      message: "data delivered",
-    });
+  res.json({
+    message: "data delivered",
+  });
 });
 
-// socket connection
-io.on("connection", (socket) => {
-    let user = socket.user
-console.log(`${user.UID} connected`);
-    socket.join(user.UID)
-    socket.on('disconnect', async (user,reason) => {
-	console.log(reason);
-        socket.leave(user.UID);
-    })
-    
-});
-io.use((socket, next) => {
-    const user = socket.handshake.auth.user;
-    if (!user) {
-        return next(new Error('Invalid Username'));
-    }
-    socket.user = user
-    next();
-})
-
+// Start server
 server.listen(PORT, () => {
-    console.log("server is running");
+  console.log(`Socket.IO server running on port ${PORT}`);
 });
